@@ -14,3 +14,5 @@ Como especialistas en automatización de pruebas, los estudiantes deberán evalu
 - Cypress or Selenium
 - Jmeter
 - Sonarqube
+
+## Flows
