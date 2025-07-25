@@ -6,6 +6,9 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
+import java.io.ByteArrayOutputStream;
+import java.io.PrintStream;
+
 public class UserTest {
     private User user;
     private static final double INITIAL_WEIGHT = 75.0;
@@ -81,4 +84,27 @@ public class UserTest {
         verify(spyUser, times(1)).updateWeight(newWeight);
         assertEquals(newWeight, spyUser.getWeight(), "Weight should be updated on the spied object");
     }
+
+        @Test
+    void showInformation_shouldPrintCorrectOutput() {
+        // Arrange
+        User user = new User("Carlos", 72.5);
+
+        // Capturar salida por consola
+        ByteArrayOutputStream output = new ByteArrayOutputStream();
+        System.setOut(new PrintStream(output));
+
+        // Act
+        user.showInformation();
+
+        // Restaurar salida estándar
+        System.setOut(System.out);
+
+        // Assert
+        String expected = "Usuario: Carlos, Peso Actual: 72.5 kg";
+        String actual = output.toString().trim();
+
+        assertEquals(expected, actual, "La salida del método showInformation() no es la esperada.");
+    }
+
 }
