@@ -21,11 +21,11 @@ public class User {
         return weight;
     }
 
-    public String getHeight() {
+    public double getHeight() {
         return height;
     }
 
-    public double getGender() {
+    public String getGender() {
         return gender;
     }
 

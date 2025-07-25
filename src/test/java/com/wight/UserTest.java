@@ -12,10 +12,12 @@ import java.io.PrintStream;
 public class UserTest {
     private User user;
     private static final double INITIAL_WEIGHT = 75.0;
+    private static final double INITIAL_HEIGHT = 1.75;
+    private static final String INITIAL_GENDER = "masculino";
 
     @BeforeEach
     void setUp() {
-        user = new User("John Doe", INITIAL_WEIGHT);
+        user = new User("John Doe", INITIAL_WEIGHT, INITIAL_HEIGHT, INITIAL_GENDER);
     }
 
     @Test
@@ -76,7 +78,7 @@ public class UserTest {
     @Test
     @DisplayName("Mockito: Should verify updateWeight method was called")
     void mockitoVerifyUpdateWeightCall() {
-        User spyUser = spy(new User("JaneDoe", 60.0));
+        User spyUser = spy(new User("JaneDoe", 60.0, 1.75 , "masculino"));
 
         double newWeight = 62.5;
         spyUser.updateWeight(newWeight);
@@ -88,7 +90,7 @@ public class UserTest {
     @Test
     void showInformation_shouldPrintCorrectOutput() {
         // Arrange
-        User user = new User("Carlos", 72.5);
+        User user = new User("Carlos", 72.5, 1.64 ,"masculino");
 
         // Capturar salida por consola
         ByteArrayOutputStream output = new ByteArrayOutputStream();
@@ -101,7 +103,7 @@ public class UserTest {
         System.setOut(System.out);
 
         // Assert
-        String expected = "Usuario: Carlos, Peso Actual: 72.5 kg";
+        String expected = "Usuario: Carlos, Peso Actual: 72.5 kg, Altura: 1.64 cm, Genero: masculino";
         String actual = output.toString().trim();
 
         assertEquals(expected, actual, "La salida del método showInformation() no es la esperada.");
