@@ -85,7 +85,7 @@ public class UserTest {
         assertEquals(newWeight, spyUser.getWeight(), "Weight should be updated on the spied object");
     }
 
-        @Test
+    @Test
     void showInformation_shouldPrintCorrectOutput() {
         // Arrange
         User user = new User("Carlos", 72.5);
