@@ -1,6 +1,8 @@
 // src/test/java/com/wight/tests/HealthTrackFlowTest.java
 package com.wight.tests;
 
+import java.net.URI;
+
 import org.junit.jupiter.api.*;
 import org.openqa.selenium.WebDriver;
 import com.wight.utils.WebDriverFactory;
@@ -14,6 +16,8 @@ public class HealthTrackFlowTestIT {
   private static final String BASE = "http://localhost:8080";
   private static final String EMAIL = "test@example.com";
   private static final String PWD   = "Secret123!";
+
+
 
   @BeforeAll
   static void init() {

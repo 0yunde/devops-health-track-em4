@@ -1,9 +1,11 @@
+# .github/workflows/ci.yml
 name: Java CI + Selenium
+
 on:
   push:
-    branches: [main]
+    branches: [ main ]
   pull_request:
-    branches: [main]
+    branches: [ main ]
 
 jobs:
   build:
@@ -11,16 +13,16 @@ jobs:
     timeout-minutes: 30
 
     steps:
-      # 1. Checkout
+      # 1. Checkout del código
       - name: Checkout repositorio
         uses: actions/checkout@v4
 
-      # 2. Setup Java 17
+      # 2. Setup de Java 17
       - name: Setup Java 17
         uses: actions/setup-java@v4
         with:
           distribution: temurin
-          java-version: "17"
+          java-version: '17'
 
       # 3. Cache del repositorio Maven
       - name: Cache Maven local repository
@@ -32,12 +34,12 @@ jobs:
             ${{ runner.os }}-maven-
 
       # 4. Asegurar Chrome y ChromeDriver alineados
-      - name: Setup Chrome for Tests
+      - name: Setup Chrome + ChromeDriver
         uses: browser-actions/setup-chrome@v2
         with:
           install-chromedriver: true
 
-      # 5. Build del paquete (sin tests)
+      # 5. Compilar el paquete sin ejecutar tests
       - name: Build package (skip tests)
         run: mvn clean package -DskipTests
 
@@ -45,18 +47,19 @@ jobs:
       - name: Start application
         run: nohup java -jar target/*.jar > app.log 2>&1 &
 
-      # 7. Esperar a que el servidor esté listo
+      # 7. Esperar a que /actuator/health devuelva UP
       - name: Wait for server to be ready
         run: |
           for i in {1..30}; do
-            if curl -s http://localhost:8080/actuator/health | grep UP; then
-              echo "✔ Server is up"
+            echo "⌛ Esperando aplicación ($i/30)…"
+            if curl --silent http://localhost:8080/actuator/health \
+               | grep -q '"status":"UP"'; then
+              echo "✔ Aplicación lista tras $((i*5)) segundos"
               exit 0
             fi
-            echo "⌛ Waiting for server..."
             sleep 5
           done
-          echo "❌ Server did not start in time" >&2
+          echo "❌ La aplicación no respondió UP en el tiempo esperado" >&2
           exit 1
 
       # 8. Ejecutar todos los tests (unitarios + Selenium)
