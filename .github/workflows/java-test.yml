@@ -1,33 +1,78 @@
----
-name: Java CI with Maven
-"on": [push, pull_request]
+name: Java CI + Selenium
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
 
 jobs:
   build:
     runs-on: ubuntu-latest
+    timeout-minutes: 30
+
     steps:
+      # 1. Checkout
       - name: Checkout repositorio
         uses: actions/checkout@v4
 
+      # 2. Setup Java 17
       - name: Setup Java 17
         uses: actions/setup-java@v4
         with:
-          distribution: "temurin"
+          distribution: temurin
           java-version: "17"
 
-      - name: Maven cache packages
+      # 3. Cache del repositorio Maven
+      - name: Cache Maven local repository
         uses: actions/cache@v4
         with:
-          path: ~/.m2
+          path: ~/.m2/repository
           key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
           restore-keys: |
             ${{ runner.os }}-maven-
 
-      - name: Build y test
-        run: mvn clean verify
+      # 4. Asegurar Chrome y ChromeDriver alineados
+      - name: Setup Chrome for Tests
+        uses: browser-actions/setup-chrome@v2
+        with:
+          install-chromedriver: true
 
-      - name: Upload coverage artifact
+      # 5. Build del paquete (sin tests)
+      - name: Build package (skip tests)
+        run: mvn clean package -DskipTests
+
+      # 6. Arrancar la aplicación en background
+      - name: Start application
+        run: nohup java -jar target/*.jar > app.log 2>&1 &
+
+      # 7. Esperar a que el servidor esté listo
+      - name: Wait for server to be ready
+        run: |
+          for i in {1..30}; do
+            if curl -s http://localhost:8080/actuator/health | grep UP; then
+              echo "✔ Server is up"
+              exit 0
+            fi
+            echo "⌛ Waiting for server..."
+            sleep 5
+          done
+          echo "❌ Server did not start in time" >&2
+          exit 1
+
+      # 8. Ejecutar todos los tests (unitarios + Selenium)
+      - name: Run tests
+        run: mvn test
+
+      # 9. Subir reportes de JUnit/Surefire
+      - name: Upload surefire-reports
         uses: actions/upload-artifact@v4
         with:
-          name: jacoco coverage
+          name: surefire-reports
+          path: target/surefire-reports
+
+      # 10. Subir informe de cobertura JaCoCo
+      - name: Upload JaCoCo coverage
+        uses: actions/upload-artifact@v4
+        with:
+          name: jacoco-coverage
           path: target/site/jacoco
