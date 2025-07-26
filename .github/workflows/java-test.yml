@@ -1,4 +1,3 @@
-# .github/workflows/ci.yml
 name: Java CI + Selenium
 
 on:
@@ -13,18 +12,18 @@ jobs:
     timeout-minutes: 30
 
     steps:
-      # 1. Checkout del código
+      # 1. Checkout
       - name: Checkout repositorio
         uses: actions/checkout@v4
 
-      # 2. Setup de Java 17
+      # 2. Java 17
       - name: Setup Java 17
         uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: '17'
 
-      # 3. Cache del repositorio Maven
+      # 3. Cache Maven
       - name: Cache Maven local repository
         uses: actions/cache@v4
         with:
@@ -33,49 +32,80 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-maven-
 
-      # 4. Asegurar Chrome y ChromeDriver alineados
+      # 4. Chrome + ChromeDriver
       - name: Setup Chrome + ChromeDriver
         uses: browser-actions/setup-chrome@v2
         with:
           install-chromedriver: true
 
-      # 5. Compilar el paquete sin ejecutar tests
+      # 5. Empaquetar sin tests (para tener el jar ejecutable)
       - name: Build package (skip tests)
-        run: mvn clean package -DskipTests
+        run: mvn -B clean package -DskipTests
 
-      # 6. Arrancar la aplicación en background
+      # 6. Arrancar la app en background
       - name: Start application
-        run: nohup java -jar target/*.jar > app.log 2>&1 &
+        env:
+          SPRING_PROFILES_ACTIVE: ci
+        run: |
+          set -euo pipefail
+          JAR=$(ls target/*.jar | grep -v original | head -n1)
+          echo "Jar seleccionado: $JAR"
+          nohup java -Dserver.port=8080 -jar "$JAR" > app.log 2>&1 &
+          echo $! > app.pid
+          sleep 2
+          echo "---- Primeras 50 líneas de app.log ----"
+          head -n 50 app.log || true
 
-      # 7. Esperar a que /actuator/health devuelva UP
+      # 7. Esperar healthcheck con info detallada
       - name: Wait for server to be ready
         run: |
-          for i in {1..30}; do
-            echo "⌛ Esperando aplicación ($i/30)…"
-            if curl --silent http://localhost:8080/actuator/health \
-               | grep -q '"status":"UP"'; then
-              echo "✔ Aplicación lista tras $((i*5)) segundos"
-              exit 0
-            fi
+          set +e
+          for i in {1..60}; do
+            HTTP=$(curl -s -o /tmp/health.json -w "%{http_code}" http://localhost:8080/actuator/health || true)
+            BODY=$(cat /tmp/health.json 2>/dev/null || true)
+            echo "[$i] HTTP $HTTP $BODY"
+            echo "$BODY" | grep -q '"status":"UP"' && exit 0
             sleep 5
           done
           echo "❌ La aplicación no respondió UP en el tiempo esperado" >&2
+          echo "---- Procesos Java ----"
+          jps -l || true
+          echo "---- Puertos en escucha ----"
+          ss -ltnp || true
+          echo "---- Últimas 300 líneas de app.log ----"
+          tail -n 300 app.log || true
           exit 1
 
-      # 8. Ejecutar todos los tests (unitarios + Selenium)
+      # 8. Tests (unitarios + Selenium)
       - name: Run tests
-        run: mvn test
+        run: mvn -B test
 
-      # 9. Subir reportes de JUnit/Surefire
+      # 9. Matar la app (si sigue viva)
+      - name: Stop application
+        if: always()
+        run: |
+          if [ -f app.pid ]; then
+            kill "$(cat app.pid)" 2>/dev/null || true
+          fi
+
+      # 10. Subir reportes y logs siempre
       - name: Upload surefire-reports
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: surefire-reports
           path: target/surefire-reports
 
-      # 10. Subir informe de cobertura JaCoCo
       - name: Upload JaCoCo coverage
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: jacoco-coverage
           path: target/site/jacoco
+
+      - name: Upload app.log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-log
+          path: app.log
