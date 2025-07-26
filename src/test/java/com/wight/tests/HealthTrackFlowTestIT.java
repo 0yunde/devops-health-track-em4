@@ -9,7 +9,7 @@ import com.wight.pages.LoginPage;
 import com.wight.pages.DashboardPage;
 
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
-public class HealthTrackFlowTest {
+public class HealthTrackFlowTestIT {
   private static WebDriver driver;
   private static final String BASE = "http://localhost:8080";
   private static final String EMAIL = "test@example.com";
