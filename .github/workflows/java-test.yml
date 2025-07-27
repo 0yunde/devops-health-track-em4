@@ -88,11 +88,11 @@ jobs:
           overwrite: true
 
       # === SonarCloud Scan via Maven plugin ===
-      - name: SonarCloud Scan via Maven
+      - name: SonarCloud Scan
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN_HT }}
         run: |
-          mvn -B verify sonar:sonar \
+          mvn -B sonar:sonar \
             -Dsonar.host.url=https://sonarcloud.io \
             -Dsonar.organization=0yunde \
             -Dsonar.projectKey=0yunde_devops-health-track-em4 \
