@@ -2,9 +2,9 @@ name: Java CI + Selenium + SonarCloud
 
 on:
   push:
-    branches: [ main ]
+    branches: [main]
   pull_request:
-    branches: [ main ]
+    branches: [main]
 
 jobs:
   build:
@@ -19,7 +19,7 @@ jobs:
         uses: actions/setup-java@v4
         with:
           distribution: temurin
-          java-version: '17'
+          java-version: "17"
 
       - name: Cache Maven local repository
         uses: actions/cache@v4
@@ -72,13 +72,6 @@ jobs:
           name: surefire-reports
           path: target/surefire-reports
 
-      - name: Upload JaCoCo coverage
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: jacoco-coverage
-          path: target/site/jacoco
-
       - name: Upload app.log
         if: always()
         uses: actions/upload-artifact@v4
@@ -86,7 +79,12 @@ jobs:
           name: app-log
           path: app.log
           overwrite: true
-
+      - name: Upload JaCoCo coverage
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: jacoco-coverage
+          path: target/site/jacoco
       # === SonarCloud Scan via Maven plugin ===
       - name: SonarCloud Scan
         env:
