@@ -45,7 +45,9 @@ jobs:
           set -euo pipefail
           JAR=$(ls target/*.jar | grep -v original | head -n1)
           echo "Jar seleccionado: $JAR"
-          unzip -p "$JAR" META-INF/MANIFEST.MF | grep -Ei 'Main-Class|Start-Class' || { echo "❌ Jar sin manifest ejecutable"; exit 1; }
+          unzip -p "$JAR" META-INF/MANIFEST.MF \
+            | grep -Ei 'Main-Class|Start-Class' \
+            || { echo "❌ Jar sin manifest ejecutable"; exit 1; }
           nohup java -Dserver.port=8080 -jar "$JAR" > app.log 2>&1 &
           echo $! > app.pid
           sleep 2
@@ -55,7 +57,8 @@ jobs:
         run: |
           set +e
           for i in {1..60}; do
-            HTTP=$(curl -s -o /tmp/health.json -w "%{http_code}" http://localhost:8080/actuator/health || true)
+            HTTP=$(curl -s -o /tmp/health.json -w "%{http_code}" \
+                     http://localhost:8080/actuator/health || true)
             BODY=$(cat /tmp/health.json 2>/dev/null || true)
             echo "[$i] HTTP $HTTP $BODY"
             echo "$BODY" | grep -q '"status":"UP"' && exit 0
@@ -91,13 +94,13 @@ jobs:
           name: jacoco-coverage
           path: target/site/jacoco
 
-      # SonarCloud analysis
       - name: Upload app.log
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: app-log
           path: app.log
+          overwrite: true
 
       # === SonarCloud Scan ===
       - name: SonarCloud Scan
@@ -106,6 +109,7 @@ jobs:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN_HT }}
         with:
           args: >
+            -Dsonar.login=${{ secrets.SONAR_TOKEN_HT }}
             -Dsonar.organization=Oyunde
             -Dsonar.projectKey=Oyunde_devops-health-track-em4
             -Dsonar.projectName=devops-health-track-em4
