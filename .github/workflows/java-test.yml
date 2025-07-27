@@ -91,13 +91,6 @@ jobs:
           name: jacoco-coverage
           path: target/site/jacoco
 
-      - name: Upload app.log
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: app-log
-          path: app.log
-
       # SonarCloud analysis
       - name: Upload app.log
         if: always()
