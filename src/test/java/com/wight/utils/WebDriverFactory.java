@@ -20,7 +20,6 @@ public class WebDriverFactory {
 
         // 2) Configura ChromeOptions con la flag necesaria
         ChromeOptions options = new ChromeOptions()
-            .addArguments("--headless")
             .addArguments("--window-size=1280,800")
             .addArguments("--remote-allow-origins=*");  // <-- aquí está la clave
 

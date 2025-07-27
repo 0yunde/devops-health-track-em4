@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+<h1>Dashboard</h1>
+
+<form method="post" action="/weight">
+  <input name="weight" placeholder="Peso en kg">
+  <button id="update-weight" type="submit">Guardar</button>
+</form>
+
+<div class="weight-history" th:text="${lastWeight}"></div>
+
+<a id="logout" href="/logout">Logout</a>
+</body>
+</html>
