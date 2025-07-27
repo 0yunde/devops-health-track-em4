@@ -1,56 +1,64 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project  
-    xmlns="http://maven.apache.org/POM/4.0.0"  
-    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"  
-    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0  
-                        http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
 
   <modelVersion>4.0.0</modelVersion>
+
+  <!-- Heredamos versiones y plugins de Spring Boot -->
+  <parent>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-parent</artifactId>
+    <version>3.2.5</version>
+    <relativePath/>
+  </parent>
+
   <groupId>com.wight</groupId>
   <artifactId>health-track</artifactId>
   <version>1.0-SNAPSHOT</version>
   <name>HealthTrack</name>
+  <packaging>jar</packaging>
 
   <properties>
-    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <maven.compiler.release>17</maven.compiler.release>
+    <java.version>17</java.version>
 
-    <!-- versiones -->
-    <junit.jupiter.version>5.10.0</junit.jupiter.version>
-    <junit.vintage.version>5.10.0</junit.vintage.version>
-    <junit4.version>4.13.2</junit4.version>
-    <selenium.version>4.8.0</selenium.version>
-    <wdm.version>5.3.2</wdm.version>
+    <!-- Solo lo que no gestiona Spring Boot -->
+    <selenium.version>4.22.0</selenium.version>
+    <webdrivermanager.version>5.9.2</webdrivermanager.version>
     <mockito.version>5.12.0</mockito.version>
     <jacoco.version>0.8.11</jacoco.version>
+
+    <!-- Plugins -->
+    <maven.surefire.plugin.version>3.2.5</maven.surefire.plugin.version>
+    <maven.failsafe.plugin.version>3.2.5</maven.failsafe.plugin.version>
   </properties>
 
   <dependencies>
-    <!-- JUnit 4 (incluye compatibilidad JUnit3) -->
+    <!-- Web + Actuator -->
     <dependency>
-      <groupId>junit</groupId>
-      <artifactId>junit</artifactId>
-      <version>${junit4.version}</version>
-      <scope>test</scope>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-web</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-actuator</artifactId>
     </dependency>
 
-    <!-- Vintage Engine para JUnit3/4 sobre la Plataforma -->
+    <!-- Tests básicos -->
     <dependency>
-      <groupId>org.junit.vintage</groupId>
-      <artifactId>junit-vintage-engine</artifactId>
-      <version>${junit.vintage.version}</version>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-test</artifactId>
       <scope>test</scope>
+      <exclusions>
+        <!-- si quieres seguir usando JUnit4/Vintage explícitamente, quita esto -->
+        <exclusion>
+          <groupId>org.junit.vintage</groupId>
+          <artifactId>junit-vintage-engine</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
 
-    <!-- JUnit Jupiter (API + Engine) -->
-    <dependency>
-      <groupId>org.junit.jupiter</groupId>
-      <artifactId>junit-jupiter</artifactId>
-      <version>${junit.jupiter.version}</version>
-      <scope>test</scope>
-    </dependency>
-
-    <!-- Mockito -->
+    <!-- Mockito (opcional, Spring Boot Test ya trae mockito-core) -->
     <dependency>
       <groupId>org.mockito</groupId>
       <artifactId>mockito-core</artifactId>
@@ -68,18 +76,49 @@
     <dependency>
       <groupId>io.github.bonigarcia</groupId>
       <artifactId>webdrivermanager</artifactId>
-      <version>6.2.0</version>
+      <version>${webdrivermanager.version}</version>
       <scope>test</scope>
     </dependency>
+
+    <!-- Si realmente necesitas JUnit 4/Vintage explícitos, descomenta:
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+      <version>4.13.2</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.junit.vintage</groupId>
+      <artifactId>junit-vintage-engine</artifactId>
+      <version>5.10.2</version>
+      <scope>test</scope>
+    </dependency>
+    -->
   </dependencies>
 
   <build>
     <plugins>
-      <!-- Surefire 3.1.2: unifica JUnit 4, 5 y Vintage -->
+      <!-- Compilador -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <configuration>
+          <release>${java.version}</release>
+          <encoding>UTF-8</encoding>
+        </configuration>
+      </plugin>
+
+      <!-- Spring Boot repackage (genera jar ejecutable) -->
+      <plugin>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-maven-plugin</artifactId>
+      </plugin>
+
+      <!-- Unit tests -->
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-surefire-plugin</artifactId>
-        <version>3.1.2</version>
+        <version>${maven.surefire.plugin.version}</version>
         <configuration>
           <useModulePath>false</useModulePath>
           <includes>
@@ -88,36 +127,59 @@
         </configuration>
       </plugin>
 
-      <!-- JaCoCo para cobertura -->
+      <!-- Integration/Selenium tests (archivos *IT.java) -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-failsafe-plugin</artifactId>
+        <version>${maven.failsafe.plugin.version}</version>
+        <executions>
+          <execution>
+            <goals>
+              <goal>integration-test</goal>
+              <goal>verify</goal>
+            </goals>
+            <configuration>
+              <useModulePath>false</useModulePath>
+              <includes>
+                <include>**/*IT.java</include>
+                <include>**/*ITCase.java</include>
+              </includes>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+
+      <!-- Jacoco -->
       <plugin>
         <groupId>org.jacoco</groupId>
         <artifactId>jacoco-maven-plugin</artifactId>
         <version>${jacoco.version}</version>
         <executions>
           <execution>
-            <goals><goal>prepare-agent</goal></goals>
+            <goals>
+              <goal>prepare-agent</goal>
+            </goals>
           </execution>
           <execution>
             <id>report</id>
             <phase>verify</phase>
-            <goals><goal>report</goal></goals>
-          </execution>
-        </executions>
-      </plugin>
-
-      <plugin>
-        <groupId>org.springframework.boot</groupId>
-        <artifactId>spring-boot-maven-plugin</artifactId>
-        <executions>
-          <execution>
             <goals>
-              <goal>repackage</goal>
+              <goal>report</goal>
             </goals>
           </execution>
         </executions>
       </plugin>
-
-
     </plugins>
   </build>
+
+  <!-- Perfil opcional para CI -->
+  <profiles>
+    <profile>
+      <id>ci</id>
+      <properties>
+        <spring.profiles.active>ci</spring.profiles.active>
+      </properties>
+    </profile>
+  </profiles>
+
 </project>
