@@ -25,6 +25,8 @@ public class UserTest {
     void constructorInitializesWithNonNullValues() {
         assertNotNull(user.getUsername(), "Username should not be null");
         assertNotNull(user.getWeight(), "Weight should not be null (it's a primitive double)");
+        assertNotNull(user.getHeight(), "Height should not be null (it's a primitive double)");
+        assertNotNull(user.getGender(), "Gender should not be null");
     }
 
     @Test
@@ -40,6 +42,8 @@ public class UserTest {
     void constructorInitializesCorrectlyCopy() {
         assertNotEquals("JohnDoe", user.getUsername(), "Username should NOT be exactly 'JohnDoe'");
         assertNotEquals(80.0, user.getWeight(), "Weight should NOT be exactly 80.0");
+        assertNotEquals(1.80, user.getHeight(), "Height should NOT be exactly 1.80");
+        assertNotEquals("MASCULINO", user.getGender(), "Gender should NOT be exactly 'MASCULINO'");
     }
 
     @Test
@@ -55,12 +59,37 @@ public class UserTest {
     }
 
     @Test
+    @DisplayName("Should return the correct height")
+    void getHeightReturnsCorrectValue() {
+        assertEquals(INITIAL_HEIGHT, user.getHeight(), "getHeight should return the set height");
+    }
+
+    @Test
+    @DisplayName("Should return the correct gender")
+    void getGenderReturnsCorrectValue() {
+        assertEquals("masculino", user.getGender(), "getGender should return the set gender");
+
+
+        user = new User("Jone Doe", INITIAL_WEIGHT, INITIAL_HEIGHT, "femenino");
+        assertEquals("femenino", user.getGender(), "getGender should return the set gender");
+    }
+
+    @Test
     @DisplayName("Should update the user's weight correctly")
     void updateWeightChangesWeight() {
         double newWeight = 80.2;
-        user.updateWeight(newWeight); // Call the method to update weight
+        user.updateWeight(newWeight);
 
         assertEquals(newWeight, user.getWeight(), "Weight should be updated to the new value");
+    }
+
+    @Test
+    @DisplayName("Should update the user's height correctly")
+    void updateHeightChangesHeight() {
+        double newHeight = 1.82;
+        user.updateHeight(newHeight);
+
+        assertEquals(newHeight, user.getHeight(), "Height should be updated to the new value");
     }
 
     // @Test
