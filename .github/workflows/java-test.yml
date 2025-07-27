@@ -34,7 +34,6 @@ jobs:
         with:
           install-chromedriver: true
 
-      # Build con repackage para que el jar sea ejecutable
       - name: Build boot jar (skip tests)
         run: mvn -B clean package -DskipTests
 
@@ -44,30 +43,18 @@ jobs:
         run: |
           set -euo pipefail
           JAR=$(ls target/*.jar | grep -v original | head -n1)
-          echo "Jar seleccionado: $JAR"
-          unzip -p "$JAR" META-INF/MANIFEST.MF \
-            | grep -Ei 'Main-Class|Start-Class' \
-            || { echo "❌ Jar sin manifest ejecutable"; exit 1; }
           nohup java -Dserver.port=8080 -jar "$JAR" > app.log 2>&1 &
           echo $! > app.pid
-          sleep 2
-          head -n 50 app.log || true
+          sleep 5
 
       - name: Wait for server to be ready
         run: |
-          set +e
-          for i in {1..60}; do
-            HTTP=$(curl -s -o /tmp/health.json -w "%{http_code}" \
-                     http://localhost:8080/actuator/health || true)
-            BODY=$(cat /tmp/health.json 2>/dev/null || true)
-            echo "[$i] HTTP $HTTP $BODY"
-            echo "$BODY" | grep -q '"status":"UP"' && exit 0
+          for i in {1..30}; do
+            if curl -s http://localhost:8080/actuator/health \
+               | grep -q '"status":"UP"'; then exit 0; fi
             sleep 5
           done
-          echo "❌ La aplicación no respondió UP en el tiempo esperado" >&2
-          echo "---- Procesos Java ----"; jps -l || true
-          echo "---- Puertos en escucha ----"; ss -ltnp || true
-          echo "---- Últimas 300 líneas de app.log ----"; tail -n 300 app.log || true
+          echo "❌ Application not UP" >&2
           exit 1
 
       - name: Run tests
@@ -76,9 +63,7 @@ jobs:
       - name: Stop application
         if: always()
         run: |
-          if [ -f app.pid ]; then
-            kill "$(cat app.pid)" 2>/dev/null || true
-          fi
+          kill "$(cat app.pid)" || true
 
       - name: Upload surefire-reports
         if: always()
@@ -109,9 +94,8 @@ jobs:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN_HT }}
         with:
           args: >
-            -Dsonar.login=${{ secrets.SONAR_TOKEN_HT }}
+            -Dsonar.token=${{ secrets.SONAR_TOKEN_HT }}
             -Dsonar.organization=Oyunde
             -Dsonar.projectKey=Oyunde_devops-health-track-em4
-            -Dsonar.projectName=devops-health-track-em4
             -Dsonar.host.url=https://sonarcloud.io
             -Dsonar.branch.name=main
