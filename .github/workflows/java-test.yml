@@ -87,15 +87,14 @@ jobs:
           path: app.log
           overwrite: true
 
-      # === SonarCloud Scan ===
+      # === SonarCloud Scan via Maven plugin ===
       - name: SonarCloud Scan
-        uses: SonarSource/sonarqube-scan-action@v5
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN_HT }}
-        with:
-          args: >
-            -Dsonar.token=${{ secrets.SONAR_TOKEN_HT }}
-            -Dsonar.organization=0yunde
-            -Dsonar.projectKey=0yunde_devops-health-track-em4
-            -Dsonar.host.url=https://sonarcloud.io
+        run: |
+          mvn -B sonar:sonar \
+            -Dsonar.host.url=https://sonarcloud.io \
+            -Dsonar.organization=0yunde \
+            -Dsonar.projectKey=0yunde_devops-health-track-em4 \
+            -Dsonar.login=${{ secrets.SONAR_TOKEN_HT }} \
             -Dsonar.branch.name=main
