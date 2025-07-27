@@ -95,7 +95,7 @@ jobs:
         with:
           args: >
             -Dsonar.token=${{ secrets.SONAR_TOKEN_HT }}
-            -Dsonar.organization=Oyunde
-            -Dsonar.projectKey=Oyunde_devops-health-track-em4
+            -Dsonar.organization=0yunde
+            -Dsonar.projectKey=0yunde_devops-health-track-em4
             -Dsonar.host.url=https://sonarcloud.io
             -Dsonar.branch.name=main
