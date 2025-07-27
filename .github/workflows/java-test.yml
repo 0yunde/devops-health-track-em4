@@ -99,10 +99,21 @@ jobs:
           path: app.log
 
       # SonarCloud analysis
-      - name: SonarCloud Scan
-        uses: sonarsource/sonarcloud-github-action@master
+      - name: Upload app.log
+        if: always()
+        uses: actions/upload-artifact@v4
         with:
-          organization: 'Oyunde'
-          projectKey: 'Oyunde_devops-health-track-em4'
-          projectName: 'devops-health-track-em4'
-          token: ${{ secrets.SONAR_TOKEN_HT }}
+          name: app-log
+          path: app.log
+
+      # === SonarCloud Scan ===
+      - name: SonarCloud Scan
+        uses: SonarSource/sonarqube-scan-action@v5
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN_HT }}
+        with:
+          args: >
+            -Dsonar.organization=Oyunde
+            -Dsonar.projectKey=Oyunde_devops-health-track-em4
+            -Dsonar.projectName=devops-health-track-em4
+            -Dsonar.host.url=https://sonarcloud.io
