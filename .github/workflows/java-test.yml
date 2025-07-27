@@ -1,4 +1,4 @@
-name: Java CI + Selenium
+name: Java CI + Selenium + SonarCloud
 
 on:
   push:
@@ -97,3 +97,12 @@ jobs:
         with:
           name: app-log
           path: app.log
+
+      # SonarCloud analysis
+      - name: SonarCloud Scan
+        uses: sonarsource/sonarcloud-github-action@master
+        with:
+          organization: 'Oyunde'
+          projectKey: 'Oyunde_devops-health-track-em4'
+          projectName: 'devops-health-track-em4'
+          token: ${{ secrets.SONAR_TOKEN_HT }}
