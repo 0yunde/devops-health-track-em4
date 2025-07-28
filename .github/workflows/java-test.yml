@@ -72,6 +72,13 @@ jobs:
           name: surefire-reports
           path: target/surefire-reports
 
+      - name: Upload JaCoCo coverage
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: jacoco-coverage
+          path: target/site/jacoco
+
       - name: Upload app.log
         if: always()
         uses: actions/upload-artifact@v4
@@ -79,12 +86,7 @@ jobs:
           name: app-log
           path: app.log
           overwrite: true
-      - name: Upload JaCoCo coverage
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: jacoco-coverage
-          path: target/site/jacoco
+
       # === SonarCloud Scan via Maven plugin ===
       - name: SonarCloud Scan
         env:

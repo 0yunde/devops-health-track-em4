@@ -119,7 +119,7 @@ public class UserTest {
     @Test
     void showInformation_shouldPrintCorrectOutput() {
         // Arrange
-        User user = new User("Carlos", 72.5, 1.64 ,"masculino");
+        this.user = new User("Carlos", 72.5, 1.64 ,"masculino");
 
         // Capturar salida por consola
         ByteArrayOutputStream output = new ByteArrayOutputStream();
