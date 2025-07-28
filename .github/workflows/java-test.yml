@@ -97,8 +97,10 @@ jobs:
       # === Ejecutar prueba de carga con JMeter ===
       - name: Run JMeter load test
         run: |
-          # limpia resultados previos
+          # limpia resultados previos y crea carpeta para el informe
           rm -rf jmeter/result-login.jtl jmeter/html-report-login
+          mkdir -p jmeter/html-report-login
+
           # modo non-GUI: genera .jtl y luego informe HTML
           jmeter -n \
             -t jmeter/test-login.jmx \
