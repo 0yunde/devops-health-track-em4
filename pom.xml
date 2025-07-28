@@ -86,7 +86,6 @@
       <scope>test</scope>
     </dependency>
 
-    <!-- Si realmente necesitas JUnit 4/Vintage explícitos, descomenta:
     <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
@@ -99,7 +98,7 @@
       <version>5.10.2</version>
       <scope>test</scope>
     </dependency>
-    -->
+
   </dependencies>
 
   <build>
@@ -110,11 +109,11 @@
         <artifactId>maven-compiler-plugin</artifactId>
         <configuration>
           <release>${java.version}</release>
-          <encoding>UTF-8</encoding>
+          <encoding>UTF-8</encoding> 
         </configuration>
       </plugin>
 
-      <!-- Spring Boot repackage (genera jar ejecutable) -->
+      <!-- Spring Boot repackage -->
       <plugin>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-maven-plugin</artifactId>
@@ -133,7 +132,7 @@
         </configuration>
       </plugin>
 
-      <!-- Integration/Selenium tests (archivos *IT.java) -->
+      <!-- Integration/Selenium tests -->
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-failsafe-plugin</artifactId>
@@ -155,13 +154,14 @@
         </executions>
       </plugin>
 
-      <!-- Jacoco -->
+      <!-- Jacoco con XML report para Sonar -->
       <plugin>
         <groupId>org.jacoco</groupId>
         <artifactId>jacoco-maven-plugin</artifactId>
         <version>${jacoco.version}</version>
         <executions>
           <execution>
+            <id>prepare-agent</id>
             <goals>
               <goal>prepare-agent</goal>
             </goals>
@@ -172,14 +172,21 @@
             <goals>
               <goal>report</goal>
             </goals>
+            <configuration>
+              <!-- Generar también el XML que Sonar espera -->
+              <formats>
+                <format>XML</format>
+              </formats>
+            </configuration>
           </execution>
         </executions>
       </plugin>
 
+      <!-- Sonar Maven Plugin actualizado -->
       <plugin>
         <groupId>org.sonarsource.scanner.maven</groupId>
         <artifactId>sonar-maven-plugin</artifactId>
-        <version>3.11.1.3001</version>
+        <version>4.0.0.4121</version>
       </plugin>
     </plugins>
   </build>
