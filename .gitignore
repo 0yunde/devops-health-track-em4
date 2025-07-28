@@ -52,3 +52,7 @@ hs_err_pid*
 replay_pid*
 
 # End of https://www.toptal.com/developers/gitignore/api/java
+
+htmlhtml-report-login
+result-login.jtl
+jmeter

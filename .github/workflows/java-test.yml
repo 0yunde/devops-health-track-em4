@@ -1,4 +1,4 @@
-name: Java CI + Selenium + SonarCloud
+name: Java CI + Selenium + SonarCloud + JMeter
 
 on:
   push:
@@ -57,7 +57,7 @@ jobs:
           echo "❌ Application not UP" >&2
           exit 1
 
-      - name: Run tests
+      - name: Run unit & integration tests
         run: mvn -B test
 
       - name: Stop application
@@ -86,6 +86,39 @@ jobs:
           name: app-log
           path: app.log
           overwrite: true
+
+      # === Descarga y configuración de JMeter ===
+      - name: Download and unpack JMeter
+        run: |
+          curl -sL https://archive.apache.org/dist/jmeter/binaries/apache-jmeter-5.6.3.tgz \
+            | tar xz -C $RUNNER_TEMP
+          echo "##[add-path]$RUNNER_TEMP/apache-jmeter-5.6.3/bin"
+
+      # === Ejecutar prueba de carga con JMeter ===
+      - name: Run JMeter load test
+        run: |
+          # limpia resultados previos
+          rm -rf jmeter/result-login.jtl jmeter/html-report-login
+          # modo non-GUI: genera .jtl y luego informe HTML
+          jmeter -n \
+            -t jmeter/test-login.jmx \
+            -l jmeter/result-login.jtl \
+            -e -o jmeter/html-report-login
+
+      # === Subir artefactos de JMeter ===
+      - name: Upload JMeter results (.jtl)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: jmeter-results
+          path: jmeter/result-login.jtl
+
+      - name: Upload JMeter HTML report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: jmeter-html-report
+          path: jmeter/html-report-login
 
       # === SonarCloud Scan via Maven plugin ===
       - name: SonarCloud Scan
