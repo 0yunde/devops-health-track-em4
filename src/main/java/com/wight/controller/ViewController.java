@@ -15,6 +15,9 @@ import java.util.List;
 @SessionAttributes({"email","weights"})
 public class ViewController {
 
+  private static final String REDIRECT_LOGIN = "redirect:/login";
+  private static final String REDIRECT_DASHBOARD = "redirect:/dashboard";
+
   @ModelAttribute("weights")
   public List<String> weights() {
     return new ArrayList<>();
@@ -30,7 +33,7 @@ public class ViewController {
                         @RequestParam String confirmPassword,
                         RedirectAttributes ra) {
     ra.addFlashAttribute("msg", "¡Registro exitoso!");
-    return "redirect:/login";
+    return REDIRECT_LOGIN;
     }
 
   // ---------- LOGIN ----------
@@ -42,7 +45,7 @@ public class ViewController {
                         @RequestParam String password,
                         Model model) {
     model.addAttribute("email", email);
-    return "redirect:/dashboard";
+    return REDIRECT_DASHBOARD;
   }
 
   // ---------- DASHBOARD ----------
@@ -56,7 +59,7 @@ public class ViewController {
   public String saveWeight(@RequestParam String weight,
                            @ModelAttribute("weights") List<String> weights) {
     weights.add(weight + " kg");
-    return "redirect:/dashboard";
+    return REDIRECT_DASHBOARD;
   }
 
   // ---------- LOGOUT ----------
@@ -64,10 +67,10 @@ public class ViewController {
   public String logout(SessionStatus status, HttpSession session) {
     status.setComplete();
     session.invalidate();
-    return "redirect:/login";
+    return REDIRECT_LOGIN;
   }
 
   // Opcional: redirigir raíz
   @GetMapping("/")
-  public String root() { return "redirect:/login"; }
+  public String root() { return REDIRECT_LOGIN; }
 }
